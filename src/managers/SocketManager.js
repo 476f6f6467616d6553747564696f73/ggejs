@@ -1,4 +1,5 @@
-const {WebSocket} = require('ws')
+const {WebSocket} = require('ws');
+const net = require('net');
 const {NetworkInstance} = require('e4k-data');
 const {onResponse} = require('../commands');
 const EmpireError = require("../tools/EmpireError");
@@ -19,10 +20,9 @@ class SocketManager {
     constructor(client, serverInstance) {
         this.client = client;
         this.serverInstance = serverInstance;
-        serverInstance.server
-        const protocol = serverInstance.zone.startsWith('EmpirefourkingdomsExGG') ? 'ws' : 'wss';
-        this.url = `${protocol}://${serverInstance.server}`
-        this.socket = new WebSocket(this.url);
+        this.protocol = serverInstance.zone.startsWith('EmpirefourkingdomsExGG') ? 'tcp' : 'wss';
+        this.url = `${this.protocol}://${serverInstance.server}:${serverInstance.port}`
+        this.socket = this.protocol === 'tcp' ? new net.Socket().connect(serverInstance.port, serverInstance.server) : new WebSocket(this.url);
         this.#addSocketListeners(this.socket);
     }
 
@@ -80,16 +80,56 @@ class SocketManager {
     writeToSocket(msg) {
         if (this.connectionStatus === ConnectionStatus.Disconnecting || this.connectionStatus === ConnectionStatus.Disconnected) return false;
         this.client.logger.t('[WRITE]', msg.substring(0, Math.min(150, msg.length)));
-        this.socket.send(msg, {}, (err) => {
-            if (err) this.client.logger.w(`\x1b[31m[SOCKET WRITE ERROR] ${err}\x1b[0m`);
-        });
+
+        if (this.protocol === "tcp") {
+            let _buff0 = Buffer.from(msg);
+            let _buff1 = Buffer.alloc(1);
+            _buff1.writeInt8(0);
+            let bytes = Buffer.concat([_buff0, _buff1]);
+            this.socket.write(bytes, 'utf8', (err) => {
+                if (err) this.client.logger.w(`\x1b[31m[SOCKET WRITE ERROR] ${err}\x1b[0m`);
+            });
+        } else {
+            this.socket.send(msg, {}, (err) => {
+                if (err) this.client.logger.w(`\x1b[31m[SOCKET WRITE ERROR] ${err}\x1b[0m`);
+            });
+        }
         return true;
     }
 
-    /** @param {WebSocket} socket */
+    currData = ""
+    /**
+     * @param {BaseClient} client
+     * @param {string} message
+     */
+    onSocketMessage(client, message) {
+        client.logger.t("[RECEIVED]", message.substring(0, Math.min(150, message.length)));
+        const params = message.substring(1, message.length - 1).split("%");
+        if (params[0] === "xt") return onResponse(client, params.splice(1, params.length - 1));
+        client.logger.w("[DATA] Cannot handle message:", message);
+    }
+
+    /** @param {WebSocket | net.Socket} socket */
     #addSocketListeners(socket) {
+        socket.addListener('ready', () => {
+            this.currData = ""
+            onSocketReady(this)
+        })
+        socket.addListener('data', (data) => {
+            this.currData += data.toString()
+            let nullIndex;
+            while ((nullIndex = this.currData.indexOf('\x00')) !== -1) {
+                const message = this.currData.substring(0, nullIndex);
+                this.currData = this.currData.substring(nullIndex + 1);
+                this.onSocketMessage(this.client, message)
+            }
+        });
+
         socket.addListener('open', () => onSocketReady(this));
-        socket.addListener('message', (data) => onSocketData(socket, this.client, data));
+        socket.addListener('message', (data) => {
+            const message = data.toString()
+            this.onSocketMessage(this.client, message)
+        });
         socket.addListener('error', (err) => {
             this.client.logger.w(`\x1b[31m[SOCKET ERROR] ${err}\x1b[0m`);
             this.client.logger.d(err);
@@ -108,7 +148,7 @@ class SocketManager {
                 this.client.logger.i("[SocketManager] Reconnecting!");
                 while (true) {
                     try {
-                        const new_socket = new WebSocket(this.url);
+                        const new_socket = this.protocol === 'tcp' ? new net.Socket().connect(this.serverInstance.port, this.serverInstance.server) : new WebSocket(this.url);
                         this.#addSocketListeners(new_socket);
                         this.socket = new_socket;
                         socket = null;
@@ -134,19 +174,6 @@ function onSocketReady(socketManager) {
     const msg = `<login z=\'${zone}\'><nick><![CDATA[]]></nick><pword><![CDATA[${pass}]]></pword></login>`;
     const message = `<msg t=\'sys\'><body action=\'login\' r=\'0\'>${msg}</body></msg>`;
     socketManager.writeToSocket(message);
-}
-
-/**
- * @param {WebSocket} socket
- * @param {BaseClient} client
- * @param {Buffer} data
- */
-function onSocketData(socket, client, data) {
-    const command = data.toString('utf-8')
-    client.logger.t("[RECEIVED]", command.substring(0, Math.min(150, command.length)));
-    const params = command.substring(1, command.length - 1).split("%");
-    if (params[0] === "xt") return onResponse(client, params.splice(1, params.length - 1));
-    client.logger.w("[DATA] Cannot handle command:", command);
 }
 
 /**
