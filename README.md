@@ -27,7 +27,7 @@ client.connect('username', 'password');
 
 ### Links
 
-- [GitHub](https://github.com/vanBrusselGames/ggejs)
+- [GitHub](https://github.com/476f6f6467616d6553747564696f73/ggejs)
 - [npm](https://www.npmjs.com/package/ggejs)
 
 ### Disclaimer
