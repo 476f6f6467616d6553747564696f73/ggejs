@@ -12,6 +12,7 @@ class SocketManager {
 
     reconnectTimeout = 300;
     serverType = 1;
+    currData = ""
 
     /**
      * @param {BaseClient} client
@@ -53,7 +54,7 @@ class SocketManager {
     async disconnect() {
         if (this.connectionStatus === ConnectionStatus.Disconnected) return;
         this.connectionStatus = ConnectionStatus.Disconnecting;
-        this.socket.close();
+        if (this.protocol === 'tcp') this.socket.end(); else this.socket.close();
         await waitForConnectionStatus(this, ConnectionStatus.Disconnected);
     }
 
@@ -97,7 +98,6 @@ class SocketManager {
         return true;
     }
 
-    currData = ""
     /**
      * @param {BaseClient} client
      * @param {string} message
