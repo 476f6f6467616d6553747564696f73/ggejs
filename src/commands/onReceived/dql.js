@@ -18,8 +18,6 @@ module.exports.execute = async function (client, errorCode, params) {
             try {
                 switch (quest.QID) {
                     case 1: //login
-                        await client.socketManager.reconnect();
-                        break;
                     case 2: //spendC2
                     case 3: //collectTax
                     case 4: //resourceToPlayer

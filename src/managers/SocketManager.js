@@ -133,7 +133,7 @@ class SocketManager {
         socket.addListener('error', (err) => {
             this.client.logger.w(`\x1b[31m[SOCKET ERROR] ${err}\x1b[0m`);
             this.client.logger.d(err);
-            socket.close();
+            if (this.protocol === 'tcp') socket.end(); else socket.close();
         });
         socket.addListener('close', () => {
             if (this.connectionStatus === ConnectionStatus.Disconnected) return;

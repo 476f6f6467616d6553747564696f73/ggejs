@@ -68,11 +68,7 @@ class CastleBuildingInfo {
  * @returns {BasicBuilding[]}
  */
 function parseBuildings(client, data) {
-    let buildings = [];
-    for (let buildingData of data) {
-        buildings.push(new BasicBuilding(client, buildingData));
-    }
-    return buildings;
+    return data.map(b => new BasicBuilding(client, b));
 }
 
 /**
@@ -81,30 +77,21 @@ function parseBuildings(client, data) {
  * @returns {BuildingGround[]}
  */
 function parseBuildingGround(client, data) {
-    const buildingGround = [];
-    for (let bg of data) {
-        buildingGround.push(new BuildingGround(client, bg))
-    }
-    return buildingGround
+    return data.map(bg => new BuildingGround(client, bg));
 }
 
 /**
  * @param {BaseClient} client
- * @param {[{OID:number, CIL:[]}]} data
+ * @param {{OID:number, CIL:[]}[]} data
  * @param {BasicBuilding[]} buildings
- * @returns {{building: number, constructionItems: CastleConstructionItemBuilding[]}[]}
+ * @returns {{building: BasicBuilding, constructionItems: CastleConstructionItemBuilding[]}[]}
  */
 function parseConstructionItemBuildings(client, data, buildings) {
-    let buildingList /* Dictionary */ = [];
-    for (let o of data) {
-        const cil = [];
-        for (let ci of o.CIL) {
-            cil.push(new CastleConstructionItemBuilding(client, ci));
-        }
-        const building = buildings.find(x => x.objectId === o.OID)
-        buildingList.push({building: building, constructionItems: cil});
-    }
-    return buildingList
+    return data.map(o => {
+        const building = buildings.find(x => x.objectId === o.OID);
+        const constructionItems = o.CIL.map(ci => new CastleConstructionItemBuilding(client, ci));
+        return {building, constructionItems};
+    })
 }
 
 module.exports = CastleBuildingInfo;

@@ -23,8 +23,11 @@ const DEFENSE_SUPPORT_DURATION_HOURLY_C2_COST = 275;
 const MAX_SLOWDOWN_DURATION_IN_SECONDS = 43200;
 const SLOWDOWN_C2_COSTS = 200;
 const TRAVEL_BOOST_CHEAT = 5;
+module.exports.TRAVEL_BOOST_CHEAT = TRAVEL_BOOST_CHEAT;
 const HORSE_BOOST_FIELDS = 10;
+module.exports.HORSE_BOOST_FIELDS = HORSE_BOOST_FIELDS;
 const LOW_DISTANCE_BOOST_FIELDS = 100;
+module.exports.LOW_DISTANCE_BOOST_FIELDS = LOW_DISTANCE_BOOST_FIELDS;
 const ALIEN_TRAVEL_DISTANCE = 50;
 const NOMAD_TRAVEL_DISTANCE = 2;
 const SAMURAI_TRAVEL_DISTANCE = 2;
@@ -57,7 +60,7 @@ const MAX_LEVEL_FOR_LOW_LEVEL_TRAVEL_BOOST = 25;
  * @return {number}
  */
 module.exports.getPlagueTravelTime = function (isTravelCheater) {
-    return getSpecialTravelTime(isTravelCheater, 600);
+    return getSpecialTravelTime(isTravelCheater, PLAGUE_TRAVEL_TIME);
 }
 
 /**
@@ -172,6 +175,7 @@ function getBoostedUnitSpeed(travelSpeed, boost, boostEQ) {
     const eqBoost = boostEQ / 100;
     return travelSpeed / 10 / BASIC_FIELD_TRAVEL_TIME * (boost + eqBoost);
 }
+module.exports.getBoostedUnitSpeed = getBoostedUnitSpeed;
 
 /**
  * @param {number} travelSpeed
@@ -235,11 +239,11 @@ module.exports.getTravelTimeWithHorse = function (unitSpeed, distance, boostFact
     if (isTravelCheater) return TRAVEL_BOOST_CHEAT;
     let horseUnitBoost = NaN;
     const boostedUnitSpeed = getBoostedUnitSpeed(unitSpeed, boostFactor, percentageBoost)
-    if (distance < 100) {
+    if (distance < LOW_DISTANCE_BOOST_FIELDS) {
         horseUnitBoost = 1 + horseBoost / 100 / 10 * 60 * (Math.log(totalDistance / 2 + 1) / Math.log(8));
     } else if (horseBoost > 0) {
-        horseUnitBoost = 1 + horseBoost / 100 / 10 * (totalDistance - 10);
-        distance -= 10;
+        horseUnitBoost = 1 + horseBoost / 100 / 10 * (totalDistance - HORSE_BOOST_FIELDS);
+        distance -= HORSE_BOOST_FIELDS;
     } else {
         horseUnitBoost = 1 + horseBoost / 100 / 10 * totalDistance;
     }

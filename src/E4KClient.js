@@ -4,12 +4,13 @@ const {NetworkInstance} = require('e4k-data');
 const BaseClient = require("./BaseClient");
 const ExternalClient = require("./ExternalClient");
 const {verifyLoginData} = require('./commands/core_avl');
+const {exportAccount} = require("./commands/core_axl");
 const {login} = require('./commands/core_lga');
 const {requestLoginData} = require("./commands/core_rld");
 const {registerGbdListener} = require("./commands/gbd");
 const {generateLoginToken} = require('./commands/glt');
 const EmpireError = require("./tools/EmpireError");
-const {ConnectionStatus, LogVerbosity, Events} = require("./utils/Constants");
+const {ConnectionStatus, Events} = require("./utils/Constants");
 
 class E4KClient extends BaseClient {
     #name = ""
@@ -24,32 +25,30 @@ class E4KClient extends BaseClient {
      */
     static async registerNewAccount(mail, password, serverInstance) {
         const client = new E4KClient(serverInstance);
-        client.logger.verbosity = LogVerbosity.Trace
         await client.socketManager.connect();
-        const loginData = await requestLoginData(client);
-        await client._login(loginData.M, loginData.P);
-        // await changeAccountMail(client, mail);
-        return {client, loginData};
-    }
-
-    async _reconnect() {
-        const bannedSecLeft = this.bannedUntil.getTime() - Date.now();
-        await new Promise(res => setTimeout(res, Math.max(bannedSecLeft, 0)));
-        return await this.connect(this.#name, this.#password);
+        const tmpLoginData = await client.requestLoginData();
+        await client._login(tmpLoginData.M, tmpLoginData.P);
+        await client.safeAccount(mail, password);
+        return client;
     }
 
     /**
      * @param {string} name
      * @param {string} password
-     * @return {Promise<this>}
      */
     async connect(name, password) {
         if (this.socketManager.connectionStatus === ConnectionStatus.Connected) return this;
         await this.socketManager.connect();
         const loginData = await this._verifyLoginData(name, password);
         await this._login(loginData.M, loginData.P);
-        await this._sendPingPong()
-        this.emit(Events.CONNECTED);
+        (async () => {
+            try {
+                await this._sendPingPong();
+                this.emit(Events.CONNECTED);
+            } catch (e) {
+                this.logger.w(e);
+            }
+        })().then()
         return this;
     }
 
@@ -80,6 +79,42 @@ class E4KClient extends BaseClient {
         return this._externalClient;
     }
 
+    async requestLoginData() {
+        try {
+            return await requestLoginData(this);
+        } catch (errorCode) {
+            throw new EmpireError(this, errorCode);
+        }
+    }
+
+    /**
+     * @param {string} mail
+     * @param {string} password
+     */
+    async safeAccount(mail, password) {
+        try {
+            const loginData = await exportAccount(this, mail, password);
+            this.#name = loginData.M;
+            this.#password = loginData.P;
+            return loginData;
+        } catch (errorCode) {
+            const overrideTextId = (() => {
+                switch (errorCode - 10005) {
+                    case 6:
+                        return "generic_register_passwordwrong_copy";
+                    case 12:
+                    case 13:
+                        return "generic_register_emailwrong_copy";
+                    case 14:
+                        return "error_mail_exists";
+                    default:
+                        return '';
+                }
+            })();
+            throw new EmpireError(this, errorCode, overrideTextId);
+        }
+    }
+
     /**
      * @param {string} name
      * @param {string} password
@@ -103,7 +138,10 @@ class E4KClient extends BaseClient {
      */
     async _verifyLoginData(name, password) {
         try {
-            return await verifyLoginData(this, name, password);
+            const loginData = await verifyLoginData(this, name, password);
+            this.#name = loginData.M;
+            this.#password = loginData.P;
+            return loginData;
         } catch (errorCode) {
             const overrideTextId = (() => {
                 switch (errorCode) {
@@ -120,10 +158,13 @@ class E4KClient extends BaseClient {
         }
     }
 
-    /**
-     * @param {number} serverType
-     * @return {Promise<{token: string, ip: string, port: string, zone: string, zoneId: string, instanceId: string, isCrossPlay: boolean}>}
-     */
+    async _reconnect() {
+        const bannedSecLeft = this.bannedUntil.getTime() - Date.now();
+        await new Promise(res => setTimeout(res, Math.max(bannedSecLeft, 0)));
+        return await this.connect(this.#name, this.#password);
+    }
+
+    /** @param {number} serverType */
     async _generateExternalServerLoginToken(serverType) {
         try {
             return await generateLoginToken(this, serverType);

@@ -13,6 +13,7 @@ class FactionCapitalMapobject extends FactionInteractiveMapobject {
     constructor(client, data) {
         super(client, data.slice(0, 3));
         this.#client = client;
+        if (data.length <= 3) return;
         this.ownerId = data[3];
         this.ownerInfo = client.worldMaps._ownerInfoData.getOwnerInfo(this.ownerId);
         this.aliveProtectorPositions = data[4].map(p => new Coordinate(p));

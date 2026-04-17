@@ -1,4 +1,4 @@
-const {Coordinate} = require("../../structures/Coordinate");
+const Coordinate = require("../../structures/Coordinate");
 
 module.exports.name = "gri";
 /**

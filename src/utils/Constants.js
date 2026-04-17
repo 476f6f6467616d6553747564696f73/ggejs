@@ -213,7 +213,8 @@ exports.MessageType = {
     Popup: MessageConst.MESSAGE_TYPE_POPUP,
     PatchNotes: MessageConst.MESSAGE_TYPE_PATCH_NOTES,
     PrivateOffer: MessageConst.MESSAGE_TYPE_PRIVATE_OFFER,
-    TextId: MessageConst.MESSAGE_TYPE_TEXT_ID
+    TextId: MessageConst.MESSAGE_TYPE_TEXT_ID,
+    DivisionChange: MessageConst.MESSAGE_TYPE_DIVISION_CHANGE,
 }
 
 exports.MessageSubType = {

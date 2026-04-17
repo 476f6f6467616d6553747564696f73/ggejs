@@ -1,10 +1,35 @@
-module.exports.name = "alb";
+const NAME = "alb";
+/** @type {CommandCallback<void>[]}*/
+const callbacks = [];
+
+module.exports.name = NAME;
+
 /**
  * @param {BaseClient} client
  * @param {number} errorCode
- * @param {{D:number, R:Object[]}} params
+ * @param {Object} params
  */
 module.exports.execute = function (client, errorCode, params) {
+    //const loginBonus = parseALB(client, params);
+    require('.').baseExecuteCommand(client, undefined, errorCode, params, callbacks);
+}
+
+/**
+ * @param {BaseClient} client
+ * @return {Promise<void>}
+ */
+module.exports.getLoginBonus = function (client) {
+    const C2SGetLoginBonusVO = {};
+    return require('.').baseSendCommand(client, NAME, C2SGetLoginBonusVO, callbacks, () => true);
+}
+
+module.exports.alb = parseALB;
+
+/**
+ * @param {BaseClient} client
+ * @param {{D:number, R:Object[]}} params
+ */
+function parseALB(client, params) {
     if (!params) return;
     /*todo:
        const cud = client.clientUserData;

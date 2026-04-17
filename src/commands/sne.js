@@ -24,6 +24,7 @@ const ConquerableAreaConqueredMessage = require("../structures/messages/Conquera
 const ConquerableAreaLostMessage = require("../structures/messages/ConquerableAreaLostMessage");
 const ConquerableNewSiegeMessage = require("../structures/messages/ConquerableNewSiegeMessage");
 const ConquerableSiegeCancelledMessage = require("../structures/messages/ConquerableSiegeCancelledMessage");
+const DivisionChangeMessage = require("../structures/messages/DivisionChangeMessage");
 const DoubleRubiesMessage = require("../structures/messages/DoubleRubiesMessage");
 const HighScoreBonusMessage = require("../structures/messages/HighScoreBonusMessage");
 const MarketCarriageArrivedMessage = require("../structures/messages/MarketCarriageArrivedMessage");
@@ -314,6 +315,8 @@ function parseMessageInfo(client, messageInfo) {
             return new AttackAdvisorSummaryMessage(client, messageInfo);
         case MessageConst.MESSAGE_TYPE_ATTACK_COUNT_THRESHOLD:
             return new AttackCountThresholdMessage(client, messageInfo);
+        case MessageConst.MESSAGE_TYPE_DIVISION_CHANGE:
+            return new DivisionChangeMessage(client, messageInfo);
         default:
             if (client._mailMessages.find(m => m.messageId === message.messageId) != null) break;
             client.logger.w(`Current MailMessage (messageType ${type}) isn't fully supported!`);

@@ -78,7 +78,7 @@ function parseGBD(client, params) {
     // parseNestedJsonResponse("tmp");
     // parseNestedJsonResponse("sce");
     // parseNestedJsonResponse("esl");
-    // parseNestedJsonResponse("ggm");
+    require('./ggm').ggm(client, params.ggm);
     // parseNestedJsonResponse("lts");
     // parseNestedJsonResponse("skl");
     // parseNestedJsonResponse("rww");
@@ -107,6 +107,7 @@ function parseGBD(client, params) {
             case "ch":
             case "gpi":
             case "gcl":
+            case "ggm":
                 // Handled before for-loop
                 break;
             case "gal":
@@ -142,7 +143,6 @@ function parseGBD(client, params) {
             case "tmp":
             case "sce":
             case "esl":
-            case "ggm":
             case "lts":
             case "skl":
             case "rww":
@@ -172,11 +172,12 @@ function parseGBD(client, params) {
                     client.logger.t('[RECEIVED-GBD]', x, '%', msg.substring(0, Math.min(140, msg.length)));
                     try {
                         require(`./${x.toLowerCase()}`)[x.toLowerCase()](client, params[x]);
+                        client.logger.d("[GBD]", x, "should be handled outside switch statement, but it's not.")
                     } catch (e) {
                         require(`./onReceived/${x.toLowerCase()}`).execute(client, 0, params[x]);
                     }
                 } catch (e) {
-                    client.logger.d("[GBD]", e);
+                    client.logger.e("[GBD]", e);
                 }
                 break;
 //#region not handled in gbd source code
@@ -207,91 +208,93 @@ function parseGBD(client, params) {
 
 /** @param {BaseClient} client */
 function handlePostGBDCommandInNextFrame(client) {
-    try {
-        /* todo
-         *  restoreTutorialIfRuined();
-         *  enableIAPmanagerStartupIntervalSignal.dispatch(false);
-         *  configureNotificationsSignal.dispatch();
-         *  worldmapCameraData.currentCenteredWorldMapObject = castleListService.getMainCastleByKingdomId(kingdomData.activeKingdomID);
-         *  if (!_loc2_) {
-         *      startTutorialSignal.dispatch(true);
-         *  }
-         *  else {
-         *      castleRemoveLoadingScreenSignal.dispatch();
-         *  }
-         *  restoreLastSessionGameStateSignal.dispatch();
-         *  initMarketingTracking();
-         *  trackDevice();
-         *  trackDisconnection();
-         */
-        requestSubscriptionsData(client);
-        /*todo
-         * directCommandMap.map(InitPaymentShopCommand).execute();
-         * if (!featureRestrictionsModel.isFeatureRestrictedWithType("accountCode",FeatureRestrictionType.HIDDEN))
-         * {
-         *    directCommandMap.map(WebshopGetAccountIdCommand).execute();
-         * }
-         * sendInstallerPackageSignal.dispatch();
-         * requestTimeForRuinPushNotification();
-         */
-        requestLoginBonusInfo(client);
-        requestMessagesData(client);
-        requestAllianceData(client);
-        requestBookmarkData(client);
-        requestConstructionItemInventory(client);
-        requestGeneralsInnData(client);
-        /* todo
-             showAccountForcedDialog();
-             directCommandMap.map(SendDeviceMetaDataCommand).execute();
-             gameStatusModel.gameIsListening = true;
-             stopCachingJsonCommandsSignal.dispatch();
-             connectionLostModel.reset();
-             if (lockConditionModel.hasCondition()) {
-                _loc1_ = lockConditionModel.hasCondition();
-                debug("client has lock condition in GBD:",_loc1_.originalConditionIds + ", find the original reason where it came from and clean");
-                lockConditionModel.conditionComplete();
-             }
-         */
-    } catch (e) {
-    }
+    /* todo
+     *  var _loc1_:LockConditionVO = null;
+     *  var _loc2_:Boolean = autoReconnectionService.isAutoReconnected;
+     *  if(!_loc2_)
+     *  {
+     *     restoreTutorialIfRuined();
+     *  }
+     *  enableIAPmanagerStartupIntervalSignal.dispatch(false);
+     *  configureNotificationsSignal.dispatch();
+     *  worldmapCameraData.currentCenteredWorldMapObject = castleListService.getMainCastleByKingdomId(kingdomData.activeKingdomID);
+     *  if (!_loc2_) {
+     *      startTutorialSignal.dispatch(true);
+     *  }
+     *  else {
+     *      castleRemoveLoadingScreenSignal.dispatch();
+     *  }
+     *  restoreLastSessionGameStateSignal.dispatch();
+     *  initMarketingTracking();
+     *  helpshiftLoginSignal.dispatch();
+     *  trackDevice();
+     *  trackDisconnection();
+     */
+    requestSubscriptionsData(client).catch(e => client.logger.w(new EmpireError(client, e)));
+    /*todo
+     * directCommandMap.map(InitPaymentShopCommand).execute();
+     * if (!featureRestrictionsModel.isFeatureRestrictedWithType("accountCode",FeatureRestrictionType.HIDDEN)) {
+     *    directCommandMap.map(MobileWebShopGetAccountIdCommand).execute();
+     * }
+     * sendInstallerPackageSignal.dispatch();
+     * requestTimeForRuinPushNotification();
+     */
+    requestLoginBonusInfo(client).catch(e => client.logger.w(new EmpireError(client, e)));
+    requestMessagesData(client).catch(e => client.logger.w(new EmpireError(client, e)));
+    requestAllianceData(client).catch(e => client.logger.w(new EmpireError(client, e)));
+    requestBookmarkData(client).catch(e => client.logger.w(new EmpireError(client, e)));
+    requestConstructionItemInventory(client).catch(e => client.logger.w(new EmpireError(client, e)));
+    requestGeneralsInnData(client).catch(e => client.logger.w(new EmpireError(client, e)));
+    /* todo
+         showAccountForcedDialog();
+         directCommandMap.map(SendDeviceMetaDataCommand).execute();
+         gameStatusModel.gameIsListening = true;
+         stopCachingJsonCommandsSignal.dispatch();
+         connectionLostModel.reset();
+         if (lockConditionModel.hasCondition()) {
+            _loc1_ = lockConditionModel.hasCondition();
+            debug("client has lock condition in GBD:",_loc1_.originalConditionIds + ", find the original reason where it came from and clean");
+            lockConditionModel.conditionComplete();
+         }
+     */
 }
 
 /** @param {BaseClient} client */
-function requestGeneralsInnData(client) {
-    require('./commands/getGeneralCharacter').execute(client);
+async function requestGeneralsInnData(client) {
+    await require('./gcs').getCharactersStatus(client);
 }
 
 /** @param {BaseClient} client */
-function requestBookmarkData(client) {
-    require('./commands/getBookmarksList').execute(client);
+async function requestBookmarkData(client) {
+    await require('./gbl').getBookmarkList(client);
 }
 
 /** @param {BaseClient} client */
-function requestConstructionItemInventory(client) {
-    require('./commands/getConstructionItemInventory').execute(client);
+async function requestConstructionItemInventory(client) {
+    await require('./gii').getConstructionItemInventory(client);
 }
 
 /** @param {BaseClient} client */
-function requestMessagesData(client) {
-    require('./sne').showMessages(client).catch(e => client.logger.w(new EmpireError(client, e)));
+async function requestMessagesData(client) {
+    await require('./sne').showMessages(client);
 }
 
 /** @param {BaseClient} client */
-function requestAllianceData(client) {
+async function requestAllianceData(client) {
     if (client.clientUserData.allianceId >= 0) {
-        require('./ain').getAllianceInfo(client, client.clientUserData.allianceId).catch(e => client.logger.w(new EmpireError(client, e)));
-        require('./commands/getAllianceFame').execute(client);
-        require('./commands/getAllianceChatHistory').execute(client);
+        await require('./ain').getAllianceInfo(client, client.clientUserData.allianceId);
+        await require('./afa').getAllianceFame(client);
+        await require('./acl').getAllianceChatHistory(client);
     }
 }
 
 /** @param {BaseClient} client */
-function requestSubscriptionsData(client) {
-    require('./commands/getSubscriptionInformation').execute(client);
+async function requestSubscriptionsData(client) {
+    await require('./sie').getSubscriptionsInformation(client);
 }
 
 /** @param {BaseClient} client */
-function requestLoginBonusInfo(client) {
-    require('./commands/getLoginBonus').execute(client);
-    require('./commands/getStartupLoginBonus').execute(client);
+async function requestLoginBonusInfo(client) {
+    await require('./alb').getLoginBonus(client);
+    require('./sli').getStartupLoginBonus(client).catch(e=>e);
 }

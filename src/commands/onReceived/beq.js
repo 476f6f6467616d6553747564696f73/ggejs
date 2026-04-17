@@ -1,8 +1,9 @@
-module.exports.name = "txs";
+module.exports.name = "beq";
 /**
  * @param {BaseClient} client
  * @param {number} errorCode
- * @param {Object} params
+ * @param {any} params
  */
 module.exports.execute = function (client, errorCode, params) {
+    // TODO
 }

@@ -36,7 +36,7 @@ export class BaseClient extends EventEmitter {
     /**
      * @param serverInstance Your player account serverInstance
      * @example ```js
-     *     const e4kNetworkInstances = require('e4k-data').network.instances.instance;
+     *     const e4kNetworkInstances = require('e4k-data').network.instances;
      *     const worldNetworkInstance = e4kNetworkInstances.find(i => i.instanceLocaId === "generic_country_world");
      *     const client = new E4KClient(worldNetworkInstance);
      *     client.connect(playername, password)
@@ -60,7 +60,7 @@ export class BaseClient extends EventEmitter {
 
     public async sendMailMessage(playerName: string, subject: string, message: string): Promise<void>;
 
-    public async getCastleInfo(Mapobject: InteractiveMapobject): Promise<Castle>;
+    public async getCastleInfo(mapObject: InteractiveMapobject): Promise<Castle>;
 
     public on<K extends keyof ClientEvents>(event: K, listener: (...args: ClientEvents[K]) => void): this;
 
@@ -84,6 +84,10 @@ export class E4KClient extends BaseClient {
     public connect(name: string, password: string): Promise<E4KClient>;
 
     public getExternalClient(serverType: IConstants.ServerType.TempServer | IConstants.ServerType.AllianceBattleGround): Promise<ExternalClient>;
+
+    public requestLoginData(): Promise<{ M: string, P: string }>;
+
+    public safeAccount(mail: string, password: string): Promise<{ M: string, P: string, PB: string }>;
 
     private _generateExternalServerLoginToken(serverType: IConstants.ServerType.TempServer | IConstants.ServerType.AllianceBattleGround): Promise<{
         token: string,
@@ -524,7 +528,7 @@ export class MovementManager extends BaseManager {
     /** Returns all movements */
     public get(): Movement[];
 
-    public async createAttackMovement(castleFrom: InteractiveMapobject, castleTo: Mapobject | CastlePosition, army: ArmyWave[], lord: Lord, horse?: Horse): Promise<ArmyAttackMovement>;
+    public async createAttackMovement(castleFrom: InteractiveMapobject, castleTo: Mapobject | CastlePosition, army: Army, lord: Lord, horse?: Horse): Promise<ArmyAttackMovement>;
 
     public async createSpyMovement(castleFrom: InteractiveMapobject, castleTo: Mapobject | CastlePosition, spyCount: number, spyType: number, spyEffect: number, horse?: Horse): Promise<SpyMovement>;
 
@@ -648,19 +652,25 @@ export class InventoryItem<T> {
     constructor(item: T, count: number);
 }
 
-export class ArmyWave {
+export class Army {
+    waves: ArmyWave[];
+    finalWave: InventoryItem<Unit>[];
+    supportTools: Tool[];
+}
+
+export interface ArmyWave {
     left: {
         units: InventoryItem<Unit>[],
         tools: InventoryItem<Tool>[],
-    }
+    };
     middle: {
         units: InventoryItem<Unit>[],
         tools: InventoryItem<Tool>[],
-    }
+    };
     right: {
         units: InventoryItem<Unit>[],
         tools: InventoryItem<Tool>[],
-    }
+    };
 }
 
 export class Horse {
@@ -762,9 +772,9 @@ export class ChatMessage {
 //#endregion
 
 export class CompactArmy {
-    public left: InventoryItem<Unit>[];
-    public middle: InventoryItem<Unit>[];
-    public right: InventoryItem<Unit>[];
+    public left: InventoryItem<Unit | Tool>[];
+    public middle: InventoryItem<Unit | Tool>[];
+    public right: InventoryItem<Unit | Tool>[];
     public supportTools: InventoryItem<Tool>[];
     public finalWave: InventoryItem<Unit>[];
     public armySize: number;
@@ -778,7 +788,7 @@ export class Coordinate {
     public X: number;
     public Y: number;
 
-    private constructor(data: number[]);
+    private constructor(data: [number, number]);
 }
 
 export class CastlePosition {
@@ -1371,7 +1381,8 @@ export type MailMessage =
     | AllianceRequestMessage
     | AttackAdvisorFailedMessage
     | AttackAdvisorSummaryMessage
-    | AttackCountThresholdMessage;
+    | AttackCountThresholdMessage
+    | DivisionChangeMessage;
 
 export class BasicMessage {
     public messageId: number;
@@ -1669,6 +1680,21 @@ export class AllianceRequestMessage extends BasicMessage {
 export class AttackCountThresholdMessage extends BasicMessage {
 }
 
+export class DivisionChangeMessage extends BasicMessage {
+    public eventId: number;
+    public divisionChangeType: number;
+    public isForAlliance: boolean;
+    public startDivision: number;
+    public endDivision: number;
+    public rank: number;
+    public points: number;
+    public pointsToThreshold: number;
+
+    public get typeAffix(): string;
+
+    public async getDivisionChangeMessage(): Promise<this>;
+}
+
 //#region AttackCancelledMessage
 export class BasicAttackCancelledMessage extends BasicMessage {
     kingdomId: number;
@@ -1899,7 +1925,10 @@ export class CastleBuildingInfo {
     public startPointY: number;
     public constructionList: ConstructionSlot[];
     public resourceFields: { food: number, stone: number, wood: number };
-    public constructionItemsPerBuilding: { building: number, constructionItems: CastleConstructionItemBuilding[] }[];
+    public constructionItemsPerBuilding: {
+        building: BasicBuilding,
+        constructionItems: CastleConstructionItemBuilding[]
+    }[];
 }
 
 export class BasicBuilding {
@@ -2592,8 +2621,12 @@ interface MessageType {
     RuinInfo: 102,
     PlayerGift: 103,
     Subscription: 104,
+    AttackCountThreshold: 105,
     ThankyYouPackage: 117,
     DowntimeStatus: 118,
+    DivisionChange: 119,
+    AttackAdvisorFailure: 120,
+    AttackAdvisorSummary: 121,
     HighscoreBonus: 122,
     EventAnnouncement: 123,
     Popup: 124,

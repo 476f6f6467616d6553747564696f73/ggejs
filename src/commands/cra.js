@@ -22,11 +22,13 @@ module.exports.execute = function (client, errorCode, params) {
  * @param {InteractiveMapobject} source
  * @param {Mapobject | CastlePosition} target
  * @param {{L: {T: [number, number][], U: [number, number][]}, M: {T: [number, number][], U: [number, number][]}, R: {T: [number, number][], U: [number, number][]}}[]} army
+ * @param {[number, number][]} finalWave
+ * @param {number[]} supportTools
  * @param {Lord} lord
  * @param {Horse} horse
  * @return {Promise<ArmyAttackMovement>}
  */
-module.exports.createArmyAttackMovement = function (client, source, target, army, lord, horse = null) {
+module.exports.createArmyAttackMovement = function (client, source, target, army, finalWave, supportTools, lord, horse = null) {
     const C2SCreateArmyAttackMovementVO = {
         SX: source.position.X,
         SY: source.position.Y,
@@ -51,8 +53,8 @@ module.exports.createArmyAttackMovement = function (client, source, target, army
         SMK: 0,
         SPK: 0,
         BKS: [],
-        AST: [],
-        RW: [],
+        AST: supportTools,
+        RW: finalWave,
         ASCT: 0,
         AAC: 0,
         AASM: 0,

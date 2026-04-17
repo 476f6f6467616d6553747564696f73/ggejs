@@ -1,4 +1,4 @@
-const {execute: allianceHelpAll} = require("../commands/allianceHelpAll");
+const {allianceHelpAll} = require("../aha");
 
 module.exports.name = "ahl";
 /**

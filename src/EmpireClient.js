@@ -31,8 +31,14 @@ class EmpireClient extends BaseClient {
         if (this.socketManager.connectionStatus === ConnectionStatus.Connected) return this;
         await this.socketManager.connect();
         await this._login(name, password);
-        await this._sendPingPong()
-        this.emit(Events.CONNECTED);
+        (async () => {
+            try {
+                await this._sendPingPong();
+                this.emit(Events.CONNECTED);
+            } catch (e) {
+                this.logger.w(e);
+            }
+        })().then()
         return this;
     }
 

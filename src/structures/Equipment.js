@@ -44,7 +44,7 @@ class Equipment {
 function parseEffects(client, data) {
     return data.map(d => {
         const effectData = [...d]
-        effectData[0] = equipment_effects.find(e => e.equipmentEffectID === d[0]).effectID
+        effectData[0] = equipment_effects.find(e => e.equipmentEffectID === d[0])?.effectID ?? d[0]
         return new Effect(client, effectData)
     })
 }

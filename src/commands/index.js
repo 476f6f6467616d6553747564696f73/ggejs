@@ -2,6 +2,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const {getErrorText} = require("../utils/ErrorConst");
 const {ConnectionStatus} = require("../utils/Constants");
+const EmpireError = require("../tools/EmpireError");
 
 /** @type {{[p: string]: function(BaseClient, number, Object)}} */
 const commands = {};

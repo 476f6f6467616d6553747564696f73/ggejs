@@ -19,14 +19,6 @@ class MovementManager extends BaseManager {
         return Math.sqrt(Math.pow(castle1.position.X - castle2.position.X, 2) + Math.pow(castle1.position.Y - castle2.position.Y, 2));
     }
 
-    /**
-     * @param {BasicMapobject | CastlePosition} castle1
-     * @param {BasicMapobject | CastlePosition} castle2
-     */
-    getDistance(castle1, castle2) {
-        return MovementManager.getDistance(castle1, castle2);
-    }
-
     /** @returns {Movement[]} */
     get() {
         this.#removeOldMovements(this.#movements);
@@ -36,7 +28,7 @@ class MovementManager extends BaseManager {
     /**
      * @param {InteractiveMapobject} castleFrom
      * @param {Mapobject | CastlePosition} castleTo
-     * @param {ArmyWave[]} army
+     * @param {Army} army
      * @param {Lord} lord
      * @param {Horse} horse
      */
@@ -44,29 +36,23 @@ class MovementManager extends BaseManager {
         try {
             /** @type {{L: {T: [number, number][], U: [number, number][]}, M: {T: [number, number][], U: [number, number][]}, R: {T: [number, number][], U: [number, number][]}}[]} */
             const armyWaves = [];
-            for (let i in army) {
-                armyWaves.push({L: {U: [], T: []}, M: {U: [], T: []}, R: {U: [], T: []}});
-                const wave = army[i];
-                for (let unit of (wave.left?.units ?? [])) {
-                    armyWaves[i].L.U.push([unit.item.wodId, unit.count]);
-                }
-                for (let tool of (wave.left?.tools ?? [])) {
-                    armyWaves[i].L.T.push([tool.item.wodId, tool.count]);
-                }
-                for (let unit of (wave.middle?.units ?? [])) {
-                    armyWaves[i].M.U.push([unit.item.wodId, unit.count]);
-                }
-                for (let tool of (wave.middle?.tools ?? [])) {
-                    armyWaves[i].M.T.push([tool.item.wodId, tool.count]);
-                }
-                for (let unit of (wave.right?.units ?? [])) {
-                    armyWaves[i].R.U.push([unit.item.wodId, unit.count]);
-                }
-                for (let tool of (wave.right?.tools ?? [])) {
-                    armyWaves[i].R.T.push([tool.item.wodId, tool.count]);
-                }
+            for (const wave of army.waves) {
+                armyWaves.push({
+                    L: {
+                        U: (wave.left?.units ?? []).map(unit => [unit.item.wodId, unit.count]),
+                        T: (wave.left?.tools ?? []).map(tool => [tool.item.wodId, tool.count])
+                    }, M: {
+                        U: (wave.middle?.units ?? []).map(unit => [unit.item.wodId, unit.count]),
+                        T: (wave.middle?.tools ?? []).map(tool => [tool.item.wodId, tool.count])
+                    }, R: {
+                        U: (wave.right?.units ?? []).map(unit => [unit.item.wodId, unit.count]),
+                        T: (wave.right?.tools ?? []).map(tool => [tool.item.wodId, tool.count])
+                    }
+                })
             }
-            return await createArmyAttackMovement(this._client, castleFrom, castleTo, armyWaves, lord, horse);
+            const finalWave = (army.finalWave ?? []).map(unit => [unit.item.wodId, unit.count]);
+            const supportTools = (army.supportTools ?? []).map(tool => tool.item.wodId);
+            return await createArmyAttackMovement(this._client, castleFrom, castleTo, armyWaves, finalWave, supportTools, lord, horse);
         } catch (errorCode) {
             /* TODO
              *  registerErrorHandler(194,null,"generic_alert_warning","alreadyConquerCapitalMovement");

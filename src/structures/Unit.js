@@ -79,10 +79,7 @@ function isSoldier(rawData) {
  * @param {number} wodId
  */
 function getData(client, wodId) {
-    for (const unit of units) {
-        if (wodId === unit.wodID) return unit;
-    }
-    client.logger.w("Unit not recognized. Please update your npm modules")
+    return units.find(u => u.wodID === wodId);
 }
 
 module.exports = Unit;
