@@ -13,7 +13,7 @@ npm install ggejs
 
 ```js
 const {Constants, E4KClient} = require('ggejs');
-const networkInstances = require('e4k-data').network.instances.instance;
+const networkInstances = require('e4k-data').network.instances;
 const worldNetworkInstance = networkInstances.find(i => i.instanceLocaId === "generic_country_world");
 
 const client = new E4KClient(worldNetworkInstance);
