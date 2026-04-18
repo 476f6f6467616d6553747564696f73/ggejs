@@ -61,14 +61,14 @@ function parseBLM(client, params) {
  */
 function parseAttackerLords(client, data, battleLog) {
     if (data["AL"]) {
-        const lord = new Lord(client, data["AL"]);
+        const lord = new Lord(data["AL"]);
         if (battleLog?.attacker.playerId === client.clientUserData.playerId) {
             const lord2 = client.equipments.getCommanders().find(c => c.id === lord.id);
             lord.name = !!lord2 ? lord2.name : "";
         }
         let general = null;
         if (lord.generalId != null && lord.generalId !== -1) {
-            general = new General(client, data["AL"]);
+            general = new General(data["AL"]);
             general.abilitiesPerWave = parseBattleLogGeneralAbilitiesPerWave(data["AA"]);
             lord.generalId = general.generalId;
         }
@@ -86,14 +86,14 @@ function parseAttackerLords(client, data, battleLog) {
  */
 function parseDefenderLords(client, data, battleLog) {
     if (data["DB"]) {
-        const lord = new Lord(client, data["DB"]);
+        const lord = new Lord(data["DB"]);
         if (battleLog?.defender.playerId === client.clientUserData.playerId) {
             const lord2 = client.equipments.getBarons().find(b => b.id === lord.id);
             lord.name = lord2 ? lord2.name : "";
         }
         let general = null;
         if (lord.generalId != null && lord.generalId !== -1) {
-            general = new General(client, data["DB"]);
+            general = new General(data["DB"]);
             general.abilitiesPerWave = parseBattleLogGeneralAbilitiesPerWave(data["AA"]);
             lord.generalId = general.generalId;
         }

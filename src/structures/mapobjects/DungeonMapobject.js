@@ -6,7 +6,6 @@ const DungeonConst = require("../../utils/DungeonConst");
 const CombatConst = require("../../utils/CombatConst");
 
 class DungeonMapobject extends InteractiveMapobject {
-    #client;
     /** @type {Dungeon} */
     _rawData = null;
 
@@ -16,7 +15,6 @@ class DungeonMapobject extends InteractiveMapobject {
      */
     constructor(client, data) {
         super(client, data.slice(0, 3));
-        this.#client = client;
         if (data[3] > 0)
             /** @type {Date} */
             this.lastSpyDate = new Date(Date.now() - data[3] * 1000);
@@ -64,14 +62,14 @@ class DungeonMapobject extends InteractiveMapobject {
         /** @type {{ troops: { left: InventoryItem<Unit>[], middle: InventoryItem<Unit>[], right: InventoryItem<Unit>[], center: InventoryItem<Unit>[] }, tools: { left: InventoryItem<Tool>[], middle: InventoryItem<Tool>[], right: InventoryItem<Tool>[] } }} */
         this._defence = {
             troops: {
-                left: parseUnits(this.#client, this._rawData.unitsL),
-                middle: parseUnits(this.#client, this._rawData.unitsM),
-                right: parseUnits(this.#client, this._rawData.unitsR),
-                center: parseUnits(this.#client, this._rawData.unitsK),
+                left: parseUnits(this._rawData.unitsL),
+                middle: parseUnits(this._rawData.unitsM),
+                right: parseUnits(this._rawData.unitsR),
+                center: parseUnits(this._rawData.unitsK),
             }, tools: {
-                left: parseUnits(this.#client, this._rawData.toolL),
-                middle: parseUnits(this.#client, this._rawData.toolM),
-                right: parseUnits(this.#client, this._rawData.toolR)
+                left: parseUnits(this._rawData.toolL),
+                middle: parseUnits(this._rawData.toolM),
+                right: parseUnits(this._rawData.toolR)
             }
         }
         return this._defence;
@@ -88,8 +86,7 @@ class DungeonMapobject extends InteractiveMapobject {
                 }
             }
         }
-        /** @type {Lord} */
-        this._lord = new Lord(this.#client, {DLID: this._rawData.lordID});
+        this._lord = new Lord({DLID: this._rawData.lordID});
         return this._lord;
     }
 
@@ -101,11 +98,10 @@ class DungeonMapobject extends InteractiveMapobject {
 }
 
 /**
- * @param {BaseClient} client
  * @param {string} _data
  * @returns {InventoryItem<Unit>[]}
  */
-function parseUnits(client, _data) {
+function parseUnits(_data) {
     /** @type {InventoryItem<Unit>[]} */
     let units = [];
     if (!_data) return units;
@@ -113,7 +109,7 @@ function parseUnits(client, _data) {
     for (let _ of data) {
         let wodId_count = _.split("+");
         units.push({
-            item: new Unit(client, parseInt(wodId_count[0])), count: parseInt(wodId_count[1])
+            item: new Unit(parseInt(wodId_count[0])), count: parseInt(wodId_count[1])
         })
     }
     return units;
@@ -124,9 +120,10 @@ function parseUnits(client, _data) {
  * @param {number} kingdomId
  * @return {WorldMapOwnerInfo}
  */
-function parseOwnerInfo(ownerInfoData, kingdomId){
+function parseOwnerInfo(ownerInfoData, kingdomId) {
     switch (kingdomId) {
-        case undefined: return null;
+        case undefined:
+            return null;
         case 0:
             return ownerInfoData.getOwnerInfo(-202 - Math.floor(Math.random() * 13));
         default:

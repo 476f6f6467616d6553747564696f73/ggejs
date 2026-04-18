@@ -3,6 +3,7 @@ const Good = require("../structures/Good");
 const InventoryItem = require("../structures/InventoryItem");
 const Lord = require("../structures/Lord");
 const {parseMapObject} = require("../utils/MapObjectParser");
+const Unit = require("../structures/Unit");
 
 const NAME = "bsd";
 /** @type {CommandCallback<SpyLog>[]}*/
@@ -94,10 +95,10 @@ function parseSpyArmyInfo(client, data) {
     /**@type {General}*/
     let defenderGeneral = null;
     if (data["B"]) {
-        defenderBaron = new Lord(client, data["B"]);
+        defenderBaron = new Lord(data["B"]);
         defenderLegendSkills = data["LS"] ?? [];
         if (defenderBaron.generalId !== -1) {
-            defenderGeneral = new General(client, data["B"]);
+            defenderGeneral = new General(data["B"]);
         }
     }
     return {
@@ -118,9 +119,9 @@ function parseSpyArmyInfo(client, data) {
 
 /**
  * @param {number} flankId
- * @param {[Unit, number][]} paramArray
+ * @param {[number, number][]} paramArray
  * @return {InventoryItem[]}
  */
 function parseSingleFlank(flankId, paramArray) {
-    return paramArray[flankId].map(unit_count => new InventoryItem(unit_count[0], unit_count[1]))
+    return paramArray[flankId].map(d => new InventoryItem(new Unit(d[0]), d[1]));
 }

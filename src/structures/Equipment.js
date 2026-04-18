@@ -4,11 +4,10 @@ const {equipment_effects} = require('e4k-data').data;
 
 class Equipment {
     /**
-     * @param {BaseClient} client
      * @param {Array} data
      * @param {Lord} lord
      */
-    constructor(client, data, lord = null) {
+    constructor(data, lord = null) {
         /** @type {number} */
         this.id = data[0];
         /** @type {number} */
@@ -26,37 +25,30 @@ class Equipment {
         /** @type {number} */
         this.setId = data[7];
         /** @type {Effect[]} */
-        this.effects = parseEffects(client, data[5]);
-        if (data[10] !== -1)
-            /** @type {Gem} */
-            this.attachedGem = parseGem(client, data[10], this);
-        if (lord)
-            /** @type {Lord} */
-            this.equippedLord = lord;
+        this.effects = parseEffects(data[5]);
+        if (data[10] !== -1) this.attachedGem = parseGem(data[10], this);
+        if (lord) this.equippedLord = lord;
     }
 }
 
 /**
- * @param {BaseClient} client
  * @param {Array} data
  * @returns {Effect[]}
  */
-function parseEffects(client, data) {
+function parseEffects(data) {
     return data.map(d => {
         const effectData = [...d]
         effectData[0] = equipment_effects.find(e => e.equipmentEffectID === d[0])?.effectID ?? d[0]
-        return new Effect(client, effectData)
+        return new Effect(effectData)
     })
 }
 
 /**
- * @param {BaseClient} client
  * @param {number} data
  * @param {Equipment} equipment
- * @returns {Gem}
  */
-function parseGem(client, data, equipment) {
-    return new Gem(client, data, equipment)
+function parseGem(data, equipment) {
+    return new Gem(data, equipment)
 }
 
 module.exports = Equipment;

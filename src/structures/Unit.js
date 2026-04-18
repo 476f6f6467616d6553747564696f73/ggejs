@@ -2,13 +2,10 @@ const Effect = require("./Effect");
 const {units} = require('e4k-data').data;
 
 class Unit {
-    /**
-     * @param {BaseClient} client
-     * @param {number} wodId
-     */
-    constructor(client, wodId) {
+    /** @param {number} wodId */
+    constructor(wodId) {
         this.wodId = wodId;
-        this.rawData = getData(client, wodId);
+        this.rawData = getData(wodId);
         if (!this.rawData) return;
         for (let i in this.rawData) {
             if (i === 'wodID') continue;
@@ -41,7 +38,7 @@ class Unit {
                     let __split_val = _.split("&amp;");
                     let _effectId = parseInt(__split_val[0]);
                     let _power = parseInt(__split_val[1]);
-                    this[i].push(new Effect(client, [_effectId, _power]));
+                    this[i].push(new Effect([_effectId, _power]));
                 })
                 continue;
             }
@@ -74,11 +71,8 @@ function isSoldier(rawData) {
 
 }
 
-/**
- * @param {BaseClient} client
- * @param {number} wodId
- */
-function getData(client, wodId) {
+/** @param {number} wodId */
+function getData(wodId) {
     return units.find(u => u.wodID === wodId);
 }
 

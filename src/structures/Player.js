@@ -31,7 +31,7 @@ class Player extends WorldMapOwnerInfo {
  * @param {Object} data
  */
 function parseVillageList(client, data) {
-    /** @type {{public: {village: VillageMapobject, units?: InventoryItem<Unit>[]}[]}[]} */
+    /** @type {{village: VillageMapobject, units?: InventoryItem<Unit>[]}[]} */
     const publicVillagesData = [];
     /** @type {{privateVillageId: number, uniqueId: number}[]} */
     const privateVillagesData = [];

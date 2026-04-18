@@ -7,16 +7,12 @@ module.exports.name = "gli";
  * @param {{B: Object[], C: Object[]}} params
  */
 module.exports.execute = function (client, errorCode, params) {
-    const barons = parseLords(client, params.B).sort((l1, l2) => l1.pictureId - l2.pictureId);
-    const commanders = parseLords(client, params.C).sort((l1, l2) => l1.pictureId - l2.pictureId);
+    const barons = parseLords(params.B).sort((l1, l2) => l1.pictureId - l2.pictureId);
+    const commanders = parseLords(params.C).sort((l1, l2) => l1.pictureId - l2.pictureId);
     client.equipments._setCommandersAndBarons(barons, commanders);
 }
 
-/**
- * @param {BaseClient} client
- * @param {Object[]} data
- * @return {Lord[]}
- */
-function parseLords(client, data) {
-    return data.map(l => new Lord(client, l));
+/** @param {Object[]} data */
+function parseLords(data) {
+    return data.map(l => new Lord(l));
 }

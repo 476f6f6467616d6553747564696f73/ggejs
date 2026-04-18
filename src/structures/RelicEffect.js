@@ -2,13 +2,10 @@ const Effect = require('./Effect');
 const {relicEffects} = require('e4k-data').data;
 
 class RelicEffect extends Effect {
-    /**
-     * @param {BaseClient} client
-     * @param {Array} data
-     */
-    constructor(client, data) {
+    /** @param {Array} data */
+    constructor(data) {
         let _data = getDataFromJson(data[0]);
-        super(client, _data.effectID);
+        super(_data.effectID);
         /** @type {number} */
         this.relicEffectId = data[0];
         //this.? = data[1];

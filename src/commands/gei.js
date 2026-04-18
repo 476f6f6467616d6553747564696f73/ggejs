@@ -13,7 +13,7 @@ module.exports.name = NAME;
  * @param {Object} params
  */
 module.exports.execute = function (client, errorCode, params) {
-    const equipmentInventory = parseGEI(client, params);
+    const equipmentInventory = parseGEI(params);
     require('.').baseExecuteCommand(client, equipmentInventory, errorCode, params, callbacks);
 }
 
@@ -29,11 +29,10 @@ module.exports.getEquipmentInventory = function (client) {
 module.exports.gei = parseGEI;
 
 /**
- * @param {BaseClient} client
  * @param {{I: [][]}} params
  * @return {(Equipment | RelicEquipment)[]}
  */
-function parseGEI(client, params) {
+function parseGEI(params) {
     if (!params || !params.I) return null;
-    return params.I.map(e => e[11] === 3 ? new RelicEquipment(client, e) : new Equipment(client, e));
+    return params.I.map(e => e[11] === 3 ? new RelicEquipment(e) : new Equipment(e));
 }

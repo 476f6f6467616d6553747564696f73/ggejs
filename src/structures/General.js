@@ -1,12 +1,8 @@
 const {generals} = require('e4k-data').data;
 
 class General {
-    /**
-     * @param {BaseClient} client
-     * @param {Object} data
-     * @returns
-     */
-    constructor(client, data) {
+    /** @param {Object} data */
+    constructor(data) {
         this.generalId = data["GID"];
         this.rawData = generals.find(g => g.generalID === data["GID"]);
         this.level = data["L"];

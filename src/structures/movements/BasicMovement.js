@@ -41,8 +41,8 @@ class BasicMovement {
             this.endWaitTime = new Date(now + (data.M.TT - data.M.PT + data.UM.TWD - data.UM.PWD) * 1000);
             if (data.UM.L) {
                 /** @type {Lord} */
-                this.lord = new Lord(client, data.UM.L);
-                if (data.UM.L.GID !== -1) this.general = new General(client, data.UM.L)
+                this.lord = new Lord(data.UM.L);
+                if (data.UM.L.GID !== -1) this.general = new General(data.UM.L)
             }
         }
     }

@@ -70,7 +70,7 @@ function parseGBD(client, params) {
     // parseNestedJsonResponse("txi");
     // parseNestedJsonResponse("rei");
     // parseNestedJsonResponse("kpi");
-    // parseNestedJsonResponse("mpe");
+    require('./mpe').mpe(client, params.mpe);
     // parseNestedJsonResponse("vli");
     // parseNestedJsonResponse("dql");
     // parseNestedJsonResponse("gli");
@@ -107,6 +107,7 @@ function parseGBD(client, params) {
             case "ch":
             case "gpi":
             case "gcl":
+            case "mpe":
             case "ggm":
                 // Handled before for-loop
                 break;
@@ -135,7 +136,6 @@ function parseGBD(client, params) {
             case "txi":
             case "rei":
             case "kpi":
-            case "mpe":
             case "vli":
             case "dql":
             case "gli":
@@ -296,5 +296,5 @@ async function requestSubscriptionsData(client) {
 /** @param {BaseClient} client */
 async function requestLoginBonusInfo(client) {
     await require('./alb').getLoginBonus(client);
-    require('./sli').getStartupLoginBonus(client).catch(e=>e);
+    require('./sli').getStartupLoginBonus(client).catch(e => e);
 }

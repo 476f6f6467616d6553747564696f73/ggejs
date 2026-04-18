@@ -78,8 +78,8 @@ function parseBLS(client, params) {
         ragePoints: params["RP"],
         shapeshifterPoints: params["SSP"],
         shapeshifterId: params["SSID"],
-        rewardEquipment: params["EQF"] == null ? null : params["EQF"][11] === 3 ? new RelicEquipment(client, params["EQF"]) : new Equipment(client, params["EQF"]),
-        rewardGem: params["GF"] == null ? null : new Gem(client, params["GF"]),
+        rewardEquipment: params["EQF"] == null ? null : params["EQF"][11] === 3 ? new RelicEquipment(params["EQF"]) : new Equipment(params["EQF"]),
+        rewardGem: params["GF"] == null ? null : new Gem(params["GF"]),
         rewardMinuteSkips: params["MSF"] == null ? null : currencyMinutesSkipValues.find(ms => ms.MinuteSkipIndex === params["MSF"] - 1),
         attackerHomeCastleId: params["AHC"],
         attackerHadHospital: params["AHH"] === 1,
@@ -141,14 +141,14 @@ function parsePbiInfo(client, data, deffWon) {
  */
 function parseAttackerLords(client, data, battleLog) {
     if (data.AL === undefined) return undefined;
-    const lord = new Lord(client, data.AL);
+    const lord = new Lord(data.AL);
     if (battleLog.attacker.playerId === client.clientUserData.playerId) {
         const lord2 = client.equipments.getCommanders().find(c => c.id === lord.id);
         lord.name = !!lord2 ? lord2.name : "";
     }
     let general = null;
     if (lord.generalId != null && lord.generalId !== -1) {
-        general = new General(client, data.AL);
+        general = new General(data.AL);
         lord.generalId = general.generalId;
     }
     return {commandant: lord, general: general, legendSkills: data.ALS ?? []};
@@ -162,14 +162,14 @@ function parseAttackerLords(client, data, battleLog) {
  */
 function parseDefenderLords(client, data, battleLog) {
     if (data.DB === undefined) return undefined;
-    const lord = new Lord(client, data.DB);
+    const lord = new Lord(data.DB);
     if (battleLog.defender.playerId === client.clientUserData.playerId) {
         const lord2 = client.equipments.getBarons().find(b => b.id === lord.id);
         lord.name = lord2 ? lord2.name : "";
     }
     let general = null;
     if (lord.generalId != null && lord.generalId !== -1) {
-        general = new General(client, data.DB);
+        general = new General(data.DB);
         lord.generalId = general.generalId;
     }
     return {baron: lord, general: general, legendSkills: data.DLS ?? []};

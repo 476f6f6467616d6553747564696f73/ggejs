@@ -3,11 +3,10 @@ const RelicGem = require("./RelicGem");
 
 class RelicEquipment {
     /**
-     * @param {BaseClient} client
      * @param {Array} data
      * @param {Lord} lord
      */
-    constructor(client, data, lord = null) {
+    constructor(data, lord = null) {
         /** @type {number} */
         this.id = data[0];
         /** @type {number} */
@@ -26,37 +25,24 @@ class RelicEquipment {
         this.relicCategoryId = data[12][1];
         /** @type {number} */
         this.mightValue = data[12][2];
-        if (data[12][3]?.length > 0)
-            /** @type {RelicGem} */
-            this.attachedGem = parseGem(client, data[12][3], this);
+        if (data[12][3]?.length > 0) this.attachedGem = parseGem(data[12][3], this);
         /** @type {RelicEffect[]} */
-        this.effects = parseEffects(client, data[5]);
-        if (lord)
-            /** @type {Lord} */
-            this.equippedLord = lord;
+        this.effects = parseEffects(data[5]);
+        if (lord) this.equippedLord = lord;
     }
 }
 
 /**
- * @param {BaseClient} client
  * @param {Array} data
  * @param {RelicEquipment} equipment
  */
-function parseGem(client, data, equipment) {
-    return new RelicGem(client, data, equipment);
+function parseGem(data, equipment) {
+    return new RelicGem(data, equipment);
 }
 
-/**
- * @param {BaseClient} client
- * @param {Array} data
- * @returns {RelicEffect[]}
- */
-function parseEffects(client, data) {
-    let effects = [];
-    for (let i in data) {
-        effects.push(new RelicEffect(client, data[i]));
-    }
-    return effects;
+/** @param {Array} data */
+function parseEffects(data) {
+    return data.map(d => new RelicEffect(d));
 }
 
 module.exports = RelicEquipment;

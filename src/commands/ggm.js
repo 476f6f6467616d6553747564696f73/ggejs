@@ -32,7 +32,7 @@ module.exports.ggm = parseGGM;
 function parseGGM(client, params) {
     if (!params) return null;
     client.equipments._setRegularGemInventory(params.GEM.map(g => {
-        return {gem: new Gem(client, g[0]), amount: g[1]}
+        return {gem: new Gem(g[0]), amount: g[1]}
     }));
-    client.equipments._setRelicGemInventory(params.RGEM.map(gem => new RelicGem(client, gem)));
+    client.equipments._setRelicGemInventory(params.RGEM.map(gem => new RelicGem(gem)));
 }

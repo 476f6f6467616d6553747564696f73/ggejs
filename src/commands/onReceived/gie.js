@@ -7,5 +7,5 @@ module.exports.name = "gie";
  * @param {{G:[]}} params
  */
 module.exports.execute = function (client, errorCode, params) {
-    client.equipments._setGenerals(params.G.map(g => new General(client, g)));
+    client.equipments._setGenerals(params.G.map(g => new General(g)));
 }
