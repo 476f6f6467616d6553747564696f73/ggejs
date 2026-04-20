@@ -1,5 +1,6 @@
 const Unit = require("./Unit");
 const {execute: gsi} = require("../commands/onReceived/gsi");
+const InventoryItem = require("./InventoryItem");
 
 class CastleUnitInventory {
 
@@ -43,13 +44,7 @@ class CastleUnitInventory {
  * @return {InventoryItem<Unit>[]}
  */
 function parseUnits(client, data) {
-    let units = [];
-    for (let u of data) {
-        units.push({
-            item: new Unit(client, u[0]), count: u[1]
-        })
-    }
-    return units;
+    return data.map(d => new InventoryItem(new Unit(d[0]), d[1]));
 }
 
 module.exports = CastleUnitInventory;

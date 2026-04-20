@@ -12,7 +12,7 @@ module.exports.name = NAME;
  * @param {Object} params
  */
 module.exports.execute = function (client, errorCode, params) {
-    const leaderboardSearchList = parseSLSE(client, params);
+    const leaderboardSearchList = parseSLSE(params);
     require('.').baseExecuteCommand(client, leaderboardSearchList, errorCode, params, callbacks);
 }
 
@@ -37,11 +37,10 @@ module.exports.searchLeaderboardScores = function (client, listType, searchValue
 module.exports.slse = parseSLSE;
 
 /**
- * @param {BaseClient} client
  * @param {{LT:number, L: Array<{LID: number, L: string[]}>}} params
  * @return {LeaderboardSearchList}
  */
-function parseSLSE(client, params) {
+function parseSLSE(params) {
     if (!params) return null;
     return parseLeaderboardSearchList(params);
 }

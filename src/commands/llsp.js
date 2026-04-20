@@ -12,7 +12,7 @@ module.exports.name = NAME;
  * @param {Object} params
  */
 module.exports.execute = function (client, errorCode, params) {
-    const leaderboardList = parseLLSP(client, params);
+    const leaderboardList = parseLLSP(params);
     require('.').baseExecuteCommand(client, leaderboardList, errorCode, params, callbacks);
 }
 
@@ -39,11 +39,10 @@ module.exports.listLeaderboardScoresPage = function (client, listType, searchRan
 module.exports.llsp = parseLLSP;
 
 /**
- * @param {BaseClient} client
  * @param {{LT:number, SI?: string, L: Array<{R: number, S: number, P: string, A: string, I: number, SI: string}>, T:number, LID:number}} params
  * @return {LeaderboardList}
  */
-function parseLLSP(client, params) {
+function parseLLSP(params) {
     if (!params) return null;
     return parseLeaderboardList(params);
 }

@@ -13,7 +13,7 @@ module.exports.name = NAME;
  * @param {Object} params
  */
 module.exports.execute = function (client, errorCode, params) {
-    const battleLog = parseBLD(client, params);
+    const battleLog = parseBLD(params);
     require('.').baseExecuteCommand(client, battleLog, errorCode, params, callbacks);
 }
 
@@ -30,63 +30,53 @@ module.exports.getBattleLogDetail = function (client, battleLogId) {
 module.exports.bld = parseBLD;
 
 /**
- * @param {BaseClient} client
  * @param {Object} params
  * @return {BattleLog}
  */
-function parseBLD(client, params) {
+function parseBLD(params) {
     if (!params) return null;
-    const supportTools = parseSupportToolsDetails(client, params.S);
-    const yard = parseYardDetailed(client, params.Y);
-    const waves = parseWavesDetails(client, params.W);
+    const supportTools = parseSupportToolsDetails(params.S);
+    const yard = parseYardDetailed(params.Y);
+    const waves = parseWavesDetails(params.W);
     return {
         courtyardAttacker: yard.attacker,
         courtyardDefender: yard.defender,
         wavesAttacker: waves.attacker,
         wavesDefender: waves.defender,
-        finalWaveAttacker: parseFinalWaveDetails(client, params.RW).attacker,
+        finalWaveAttacker: parseFinalWaveDetails(params.RW).attacker,
         supportToolsAttacker: supportTools.attacker,
         supportToolsDefender: supportTools.defender,
     };
 }
 
-/**
- * @param {BaseClient} client
- * @param {Array} params
- */
-function parseSupportToolsDetails(client, params) {
+/** @param {Array} params */
+function parseSupportToolsDetails(params) {
     /** @type {{attacker: BattleLogUnit[], defender: BattleLogUnit[]}} */
     const output = {attacker: [], defender: []};
     if (!params || params.length === 0) return output;
     params[0].shift();
-    output.attacker = parseTools(client, params[0]);
+    output.attacker = parseTools(params[0]);
     if (!params[1] || params[1].length === 0) return output;
     params[1].shift();
-    output.defender = parseTools(client, params[1]);
+    output.defender = parseTools(params[1]);
     return output;
 }
 
-/**
- * @param {BaseClient} client
- * @param {Array} params
- */
-function parseYardDetailed(client, params) {
+/** @param {Array} params */
+function parseYardDetailed(params) {
     /** @type {{attacker: BattleLogUnit[], defender: BattleLogUnit[]}} */
     const output = {attacker: [], defender: []};
     if (!params || params.length === 0) return output;
     params[0].shift();
-    output.attacker = parseUnits(client, params[0]);
+    output.attacker = parseUnits(params[0]);
     if (!params[1] || params[1].length === 0) return output;
     params[1].shift();
-    output.defender = parseUnits(client, params[1]);
+    output.defender = parseUnits(params[1]);
     return output;
 }
 
-/**
- * @param {BaseClient} client
- * @param {Array} params
- */
-function parseWavesDetails(client, params) {
+/** @param {Array} params */
+function parseWavesDetails(params) {
     /** @type {{attacker: BattleLogArmyWave[], defender: BattleLogArmyWave[]}} */
     const output = {attacker: [], defender: []};
     if (!params || params.length === 0) return output;
@@ -94,65 +84,53 @@ function parseWavesDetails(client, params) {
         const flanksAtt = [];
         wave[0].shift();
         for (let flank of wave[0]) {
-            flanksAtt.push({soldiers: parseUnits(client, flank[0]), tools: parseTools(client, flank[1])});
+            flanksAtt.push({soldiers: parseUnits(flank[0]), tools: parseTools(flank[1])});
         }
         output.attacker.push({left: flanksAtt[0], middle: flanksAtt[0], right: flanksAtt[0]});
         const flanksDef = [];
         wave[1].shift();
         for (let flank of wave[1]) {
-            flanksDef.push({soldiers: parseUnits(client, flank[0]), tools: parseTools(client, flank[1])});
+            flanksDef.push({soldiers: parseUnits(flank[0]), tools: parseTools(flank[1])});
         }
         output.defender.push({left: flanksDef[0], middle: flanksDef[0], right: flanksDef[0]});
     }
     return output;
 }
 
-/**
- * @param {BaseClient} client
- * @param {Array} params
- */
-function parseFinalWaveDetails(client, params) {
+/** @param {Array} params */
+function parseFinalWaveDetails(params) {
     /** @type {{attacker: BattleLogUnit[]}} */
     const output = {attacker: []};
     if (params && params.length > 0) {
         params[0].shift();
-        output.attacker = parseUnits(client, params);
+        output.attacker = parseUnits(params);
     }
     return output;
 }
 
-/**
- * @param {BaseClient} client
- * @param {number[][]} param
- */
-function parseUnits(client, param) {
+/** @param {number[][]} param */
+function parseUnits(param) {
     /** @type {BattleLogUnit[]} */
     const units = [];
     if (param && param.length > 0) {
         if (typeof param[0] === 'number') {
-            if (param.length >= 3) units.push(parseData(client, param));
+            if (param.length >= 3) units.push(parseData(param));
         }
         if (Array.isArray(param[0])) {
             for (let data of param) {
-                if (data.length >= 3) units.push(parseData(client, data));
+                if (data.length >= 3) units.push(parseData(data));
             }
         }
     }
     return units;
 }
 
-/**
- * @param {BaseClient} client
- * @param {number[][]} param
- */
-function parseTools(client, param) {
-    return (param ?? []).filter(t => t.length >= 3).map(t => parseData(client, t))
+/** @param {number[][]} param */
+function parseTools(param) {
+    return (param ?? []).filter(t => t.length >= 3).map(t => parseData(t))
 }
 
-/**
- * @param {BaseClient} client
- * @param {Array} data
- */
-function parseData(client, data) {
-    return new BattleLogUnit(new Unit(client, data[0]), data[1], data[2]);
+/** @param {Array} data */
+function parseData(data) {
+    return new BattleLogUnit(new Unit(data[0]), data[1], data[2]);
 }

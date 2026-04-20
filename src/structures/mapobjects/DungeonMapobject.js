@@ -4,6 +4,7 @@ const Unit = require("../Unit");
 const Lord = require("../Lord");
 const DungeonConst = require("../../utils/DungeonConst");
 const CombatConst = require("../../utils/CombatConst");
+const InventoryItem = require("../InventoryItem");
 
 class DungeonMapobject extends InteractiveMapobject {
     /** @type {Dungeon} */
@@ -108,9 +109,7 @@ function parseUnits(_data) {
     let data = _data.split("#");
     for (let _ of data) {
         let wodId_count = _.split("+");
-        units.push({
-            item: new Unit(parseInt(wodId_count[0])), count: parseInt(wodId_count[1])
-        })
+        units.push(new InventoryItem(new Unit(parseInt(wodId_count[0])), parseInt(wodId_count[1])))
     }
     return units;
 }

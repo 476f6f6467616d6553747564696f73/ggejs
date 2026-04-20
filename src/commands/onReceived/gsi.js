@@ -21,5 +21,5 @@ module.exports.execute = function (client, errorCode, params) {
  * @return {InventoryItem<Unit>[]}
  */
 function parseUnits(client, data) {
-    return data.map(u => new InventoryItem(new Unit(client, u[0]), u[1]));
+    return data.map(u => new InventoryItem(new Unit(u[0]), u[1]));
 }

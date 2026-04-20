@@ -10,7 +10,7 @@ module.exports.name = NAME;
  * @param {Object} params
  */
 module.exports.execute = function (client, errorCode, params) {
-    parseSMS(client, params);
+    parseSMS(params);
     require('.').baseExecuteCommand(client, undefined, errorCode, params, callbacks);
 }
 
@@ -32,11 +32,8 @@ module.exports.sendMessage = function (client, receiverName, subject, msg) {
 
 module.exports.sms = parseSMS;
 
-/**
- * @param {BaseClient} client
- * @param {{}} params
- */
-function parseSMS(client, params) {
+/** @param {{}} params */
+function parseSMS(params) {
 }
 
 /** @param {string} value */

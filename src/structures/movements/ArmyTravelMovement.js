@@ -1,6 +1,7 @@
 const BasicMovement = require("./BasicMovement");
 const Good = require("../Good");
 const Unit = require("../Unit");
+const InventoryItem = require("../InventoryItem");
 
 class ArmyTravelMovement extends BasicMovement {
     /**
@@ -34,7 +35,7 @@ function parseGoods(client, data) {
 function parseArmy(client, data) {
     /** @type {InventoryItem<Unit>[]} */
     const army = [];
-    for (const i in data) army.push({item: new Unit(client, data[i][0]), count: data[i][1]})
+    for (const i in data) army.push(new InventoryItem(new Unit(data[i][0]), data[i][1]))
     return army;
 }
 

@@ -1,5 +1,6 @@
 const Unit = require("../Unit");
 const BasicMovement = require("./BasicMovement");
+const InventoryItem = require("../InventoryItem");
 
 class SiegeMovement extends BasicMovement {
     /**
@@ -19,9 +20,7 @@ class SiegeMovement extends BasicMovement {
  * @returns {InventoryItem<Unit>[]}
  */
 function parse(client, data) {
-    return data.map(d => {
-        return {item: new Unit(client, d[0]), count: d[1]}
-    })
+    return data.map(d => new InventoryItem(new Unit(d[0]), d[1]))
 }
 
 module.exports = SiegeMovement;

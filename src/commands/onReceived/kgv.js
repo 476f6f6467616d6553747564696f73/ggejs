@@ -44,8 +44,5 @@ function parseVillageList(client, data) {
  * @returns {InventoryItem<Unit>[]}
  */
 function parseUnits(client, data) {
-    if (!data) return [];
-    return data.map(d => {
-        return new InventoryItem(new Unit(client, d[0]), d[1])
-    })
+    return (data ?? []).map(d => new InventoryItem(new Unit(d[0]), d[1]));
 }
